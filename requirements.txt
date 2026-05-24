@@ -5,5 +5,3 @@ seaborn>=0.13
 scikit-learn>=1.3
 scipy>=1.11
 statsmodels>=0.14
-
-git@github-secondary:BitnBolt/bitnbolt.in.git
