@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    canvas { display: block; width: 100%; height: 260px; cursor: crosshair; }
+  </style>
+</head>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-2 select-none">
+  <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+    <!-- Header -->
+    <div class="flex items-center justify-between gap-2 mb-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          <h2 class="text-[var(--foreground)] font-bold text-sm">Humidity vs. Time &bull; ems_data_time_humidity_12_08_2025</h2>
+        </div>
+        <p class="text-[var(--muted-foreground)] text-xs mt-0.5">12 August 2025 &bull; 08:01:49 &rarr; 14:10:06</p>
+      </div>
+      <div class="text-right">
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-cyan-950 text-cyan-300 border border-cyan-800">
+          149 data points
+        </span>
+      </div>
+    </div>
+
+    <!-- Metric Chips -->
+    <div class="grid grid-cols-4 gap-2 mb-3 text-center">
+      <div class="bg-[var(--background)] p-1.5 rounded-lg border border-[var(--border)]">
+        <div class="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Start (08:01)</div>
+        <div class="text-xs font-bold text-cyan-400">99.7%</div>
+      </div>
+      <div class="bg-[var(--background)] p-1.5 rounded-lg border border-[var(--border)]">
+        <div class="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Trough (12:51)</div>
+        <div class="text-xs font-bold text-rose-400">41.9%</div>
+      </div>
+      <div class="bg-[var(--background)] p-1.5 rounded-lg border border-[var(--border)]">
+        <div class="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Close (14:10)</div>
+        <div class="text-xs font-bold text-emerald-400">63.1%</div>
+      </div>
+      <div class="bg-[var(--background)] p-1.5 rounded-lg border border-[var(--border)]">
+        <div class="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Mean Humidity</div>
+        <div class="text-xs font-bold text-amber-400">64.6%</div>
+      </div>
+    </div>
+
+    <!-- Chart Canvas Container -->
+    <div class="relative bg-[var(--background)] rounded-lg border border-[var(--border)] p-2">
+      <canvas id="chartCanvas"></canvas>
+      <!-- Hover Tooltip -->
+      <div id="tooltip" class="absolute hidden pointer-events-none bg-slate-900/95 text-white text-xs px-2.5 py-1.5 rounded-md border border-cyan-500/50 shadow-xl backdrop-blur-sm z-10 transition-opacity">
+        <div id="tt-time" class="font-medium text-slate-300"></div>
+        <div id="tt-val" class="font-bold text-cyan-400 text-sm"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = [[1754985709000, 99.7, "12/08/2025 08:01:49"], [1754985831000, 99.4, "12/08/2025 08:03:51"], [1754985952000, 99.1, "12/08/2025 08:05:52"], [1754986194000, 97.4, "12/08/2025 08:09:54"], [1754986314000, 97.7, "12/08/2025 08:11:54"], [1754986435000, 97.1, "12/08/2025 08:13:55"], [1754986556000, 96.2, "12/08/2025 08:15:56"], [1754986799000, 94.1, "12/08/2025 08:19:59"], [1754986921000, 93.6, "12/08/2025 08:22:01"], [1754987043000, 93.4, "12/08/2025 08:24:03"], [1754987165000, 92.8, "12/08/2025 08:26:05"], [1754987287000, 92.6, "12/08/2025 08:28:07"], [1754987408000, 93.0, "12/08/2025 08:30:08"], [1754987652000, 92.8, "12/08/2025 08:34:12"], [1754987773000, 93.1, "12/08/2025 08:36:13"], [1754987895000, 93.2, "12/08/2025 08:38:15"], [1754988016000, 93.1, "12/08/2025 08:40:16"], [1754988260000, 93.7, "12/08/2025 08:44:20"], [1754988381000, 93.9, "12/08/2025 08:46:21"], [1754988503000, 93.0, "12/08/2025 08:48:23"], [1754988625000, 90.4, "12/08/2025 08:50:25"], [1754988879000, 84.8, "12/08/2025 08:54:39"], [1754988994000, 82.6, "12/08/2025 08:56:34"], [1754989127000, 80.5, "12/08/2025 08:58:47"], [1754989242000, 78.7, "12/08/2025 09:00:42"], [1754989498000, 78.8, "12/08/2025 09:04:58"], [1754989613000, 80.4, "12/08/2025 09:06:53"], [1754989745000, 81.9, "12/08/2025 09:09:05"], [1754989861000, 81.2, "12/08/2025 09:11:01"], [1754989993000, 80.0, "12/08/2025 09:13:13"], [1754990108000, 78.1, "12/08/2025 09:15:08"], [1754990362000, 76.8, "12/08/2025 09:19:22"], [1754990478000, 77.4, "12/08/2025 09:21:18"], [1754990610000, 79.2, "12/08/2025 09:23:30"], [1754990725000, 79.7, "12/08/2025 09:25:25"], [1754990982000, 75.5, "12/08/2025 09:29:42"], [1754991098000, 74.2, "12/08/2025 09:31:38"], [1754991230000, 74.0, "12/08/2025 09:33:50"], [1754991345000, 73.6, "12/08/2025 09:35:45"], [1754991599000, 75.8, "12/08/2025 09:39:59"], [1754991715000, 75.5, "12/08/2025 09:41:55"], [1754991847000, 74.4, "12/08/2025 09:44:07"], [1754991963000, 74.1, "12/08/2025 09:46:03"], [1754992094000, 73.2, "12/08/2025 09:48:14"], [1754992210000, 72.1, "12/08/2025 09:50:10"], [1754992467000, 71.7, "12/08/2025 09:54:27"], [1754992583000, 72.0, "12/08/2025 09:56:23"], [1754992715000, 69.4, "12/08/2025 09:58:35"], [1754992830000, 66.7, "12/08/2025 10:00:30"], [1754993085000, 62.8, "12/08/2025 10:04:45"], [1754993200000, 62.1, "12/08/2025 10:06:40"], [1754993332000, 61.6, "12/08/2025 10:08:52"], [1754993448000, 62.3, "12/08/2025 10:10:48"], [1754993695000, 66.1, "12/08/2025 10:14:55"], [1754993704000, 66.4, "12/08/2025 10:15:04"], [1754993954000, 68.6, "12/08/2025 10:19:14"], [1754994064000, 68.0, "12/08/2025 10:21:04"], [1754994196000, 68.8, "12/08/2025 10:23:16"], [1754994311000, 69.6, "12/08/2025 10:25:11"], [1754994564000, 69.9, "12/08/2025 10:29:24"], [1754994680000, 69.5, "12/08/2025 10:31:20"], [1754994814000, 68.7, "12/08/2025 10:33:34"], [1754994926000, 68.2, "12/08/2025 10:35:26"], [1754995183000, 67.1, "12/08/2025 10:39:43"], [1754995301000, 66.2, "12/08/2025 10:41:41"], [1754995430000, 65.3, "12/08/2025 10:43:50"], [1754995546000, 63.7, "12/08/2025 10:45:46"], [1754995795000, 62.0, "12/08/2025 10:49:55"], [1754995911000, 60.8, "12/08/2025 10:51:51"], [1754996043000, 60.1, "12/08/2025 10:54:03"], [1754996159000, 59.2, "12/08/2025 10:55:59"], [1754996290000, 58.8, "12/08/2025 10:58:10"], [1754996406000, 58.2, "12/08/2025 11:00:06"], [1754996663000, 55.8, "12/08/2025 11:04:23"], [1754996778000, 54.3, "12/08/2025 11:06:18"], [1754996910000, 52.5, "12/08/2025 11:08:30"], [1754997026000, 51.5, "12/08/2025 11:10:26"], [1754997280000, 49.5, "12/08/2025 11:14:40"], [1754997395000, 49.4, "12/08/2025 11:16:35"], [1754997527000, 49.3, "12/08/2025 11:18:47"], [1754997642000, 49.4, "12/08/2025 11:20:42"], [1754997890000, 48.4, "12/08/2025 11:24:50"], [1754997900000, 48.3, "12/08/2025 11:25:00"], [1754998147000, 49.2, "12/08/2025 11:29:07"], [1754998263000, 48.9, "12/08/2025 11:31:03"], [1754998394000, 48.3, "12/08/2025 11:33:14"], [1754998510000, 47.3, "12/08/2025 11:35:10"], [1754998765000, 47.0, "12/08/2025 11:39:25"], [1754998880000, 47.1, "12/08/2025 11:41:20"], [1754999012000, 47.1, "12/08/2025 11:43:32"], [1754999127000, 48.2, "12/08/2025 11:45:27"], [1754999384000, 51.5, "12/08/2025 11:49:44"], [1754999500000, 51.7, "12/08/2025 11:51:40"], [1754999632000, 50.2, "12/08/2025 11:53:52"], [1754999748000, 48.8, "12/08/2025 11:55:48"], [1754999995000, 47.0, "12/08/2025 11:59:55"], [1755000002000, 47.1, "12/08/2025 12:00:02"], [1755000250000, 47.1, "12/08/2025 12:04:10"], [1755000365000, 46.5, "12/08/2025 12:06:05"], [1755000375000, 46.6, "12/08/2025 12:06:15"], [1755000611000, 45.7, "12/08/2025 12:10:11"], [1755000867000, 44.4, "12/08/2025 12:14:27"], [1755000983000, 43.9, "12/08/2025 12:16:23"], [1755001115000, 43.5, "12/08/2025 12:18:35"], [1755001231000, 43.3, "12/08/2025 12:20:31"], [1755001485000, 42.2, "12/08/2025 12:24:45"], [1755001601000, 42.3, "12/08/2025 12:26:41"], [1755001733000, 42.7, "12/08/2025 12:28:53"], [1755001849000, 43.2, "12/08/2025 12:30:49"], [1755002096000, 43.9, "12/08/2025 12:34:56"], [1755002107000, 43.8, "12/08/2025 12:35:07"], [1755002355000, 43.3, "12/08/2025 12:39:15"], [1755002470000, 43.4, "12/08/2025 12:41:10"], [1755002602000, 43.6, "12/08/2025 12:43:22"], [1755002718000, 43.7, "12/08/2025 12:45:18"], [1755002972000, 42.5, "12/08/2025 12:49:32"], [1755003088000, 41.9, "12/08/2025 12:51:28"], [1755003220000, 42.5, "12/08/2025 12:53:40"], [1755003336000, 44.4, "12/08/2025 12:55:36"], [1755003593000, 49.8, "12/08/2025 12:59:53"], [1755003709000, 50.9, "12/08/2025 13:01:49"], [1755003840000, 52.5, "12/08/2025 13:04:00"], [1755003956000, 52.9, "12/08/2025 13:05:56"], [1755004088000, 53.2, "12/08/2025 13:08:08"], [1755004204000, 53.3, "12/08/2025 13:10:04"], [1755004458000, 53.9, "12/08/2025 13:14:18"], [1755004574000, 53.7, "12/08/2025 13:16:14"], [1755004709000, 53.9, "12/08/2025 13:18:29"], [1755004822000, 53.7, "12/08/2025 13:20:22"], [1755005079000, 55.7, "12/08/2025 13:24:39"], [1755005195000, 56.7, "12/08/2025 13:26:35"], [1755005327000, 58.3, "12/08/2025 13:28:47"], [1755005442000, 60.0, "12/08/2025 13:30:42"], [1755005698000, 62.7, "12/08/2025 13:34:58"], [1755005814000, 63.8, "12/08/2025 13:36:54"], [1755005946000, 64.7, "12/08/2025 13:39:06"], [1755006061000, 65.6, "12/08/2025 13:41:01"], [1755006194000, 65.6, "12/08/2025 13:43:14"], [1755006310000, 65.4, "12/08/2025 13:45:10"], [1755006567000, 64.9, "12/08/2025 13:49:27"], [1755006683000, 65.1, "12/08/2025 13:51:23"], [1755006815000, 65.2, "12/08/2025 13:53:35"], [1755006930000, 64.8, "12/08/2025 13:55:30"], [1755007185000, 64.6, "12/08/2025 13:59:45"], [1755007300000, 63.8, "12/08/2025 14:01:40"], [1755007432000, 64.2, "12/08/2025 14:03:52"], [1755007548000, 63.4, "12/08/2025 14:05:48"], [1755007796000, 63.1, "12/08/2025 14:09:56"], [1755007806000, 63.1, "12/08/2025 14:10:06"]];
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const ttTime = document.getElementById('tt-time');
+    const ttVal = document.getElementById('tt-val');
+
+    let mouseX = -1;
+    let mouseY = -1;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = 260 * dpr;
+      ctx.scale(dpr, dpr);
+      render();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function render() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = 260;
+      ctx.clearRect(0, 0, w, h);
+
+      if (!data || data.length === 0) return;
+
+      const padL = 40, padR = 20, padT = 15, padB = 30;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+
+      const minT = data[0][0];
+      const maxT = data[data.length - 1][0];
+      const minY = 35;
+      const maxY = 105;
+
+      const getX = t => padL + ((t - minT) / (maxT - minT || 1)) * plotW;
+      const getY = v => padT + (1 - (v - minY) / (maxY - minY)) * plotH;
+
+      // Draw Grid & Y-Ticks
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      const yTicks = [40, 50, 60, 70, 80, 90, 100];
+      for (const yt of yTicks) {
+        const yPos = getY(yt);
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(padL, yPos);
+        ctx.lineTo(w - padR, yPos);
+        ctx.stroke();
+        ctx.fillText(yt + '%', padL - 6, yPos);
+      }
+      ctx.setLineDash([]);
+
+      // Draw X-Ticks
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const numXTicks = 7;
+      for (let i = 0; i <= numXTicks; i++) {
+        const tVal = minT + (i / numXTicks) * (maxT - minT);
+        const xPos = getX(tVal);
+        const dateObj = new Date(tVal);
+        const timeStr = dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+        ctx.fillText(timeStr, xPos, h - padB + 8);
+      }
+
+      // Draw Gradient Area
+      const grad = ctx.createLinearGradient(0, padT, 0, h - padB);
+      grad.addColorStop(0, 'rgba(14, 165, 233, 0.35)');
+      grad.addColorStop(1, 'rgba(14, 165, 233, 0.02)');
+
+      ctx.beginPath();
+      ctx.moveTo(getX(data[0][0]), h - padB);
+      for (const pt of data) {
+        ctx.lineTo(getX(pt[0]), getY(pt[1]));
+      }
+      ctx.lineTo(getX(data[data.length - 1][0]), h - padB);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Draw Line
+      ctx.lineWidth = 2.4;
+      ctx.strokeStyle = '#38bdf8';
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = getX(data[i][0]);
+        const y = getY(data[i][1]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Draw Points
+      ctx.fillStyle = '#0ea5e9';
+      for (const pt of data) {
+        const x = getX(pt[0]);
+        const y = getY(pt[1]);
+        ctx.beginPath();
+        ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw Mean Line
+      const meanY = getY(64.6);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      ctx.moveTo(padL, meanY);
+      ctx.lineTo(w - padR, meanY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Crosshair & Hover
+      if (mouseX >= padL && mouseX <= w - padR) {
+        const hoverT = minT + ((mouseX - padL) / plotW) * (maxT - minT);
+        let nearest = data[0];
+        let minDist = Math.abs(nearest[0] - hoverT);
+        for (let i = 1; i < data.length; i++) {
+          const dist = Math.abs(data[i][0] - hoverT);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = data[i];
+          } else if (dist > minDist && data[i][0] > hoverT) {
+            break;
+          }
+        }
+
+        const nx = getX(nearest[0]);
+        const ny = getY(nearest[1]);
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(nx, padT);
+        ctx.lineTo(nx, h - padB);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(nx, ny, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        tooltip.style.display = 'block';
+        ttTime.innerText = nearest[2];
+        ttVal.innerText = nearest[1] + '% Humidity';
+
+        const ttWidth = tooltip.offsetWidth || 130;
+        let ttX = nx - ttWidth / 2;
+        if (ttX < 10) ttX = 10;
+        if (ttX + ttWidth > w - 10) ttX = w - ttWidth - 10;
+        tooltip.style.left = ttX + 'px';
+        tooltip.style.top = Math.max(10, ny - 50) + 'px';
+      } else {
+        tooltip.style.display = 'none';
+      }
+    }
+
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      render();
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      mouseX = -1;
+      mouseY = -1;
+      tooltip.style.display = 'none';
+      render();
+    });
+
+    setTimeout(resizeCanvas, 50);
+  </script>
+</body>
+</html>
