@@ -1,0 +1,24 @@
+Interpretation of negative pre-calibration R² (EMS air temperature). For the EMS
+air-temperature channel (n=36), the uncalibrated sensor–meter comparison yielded
+R² = -4.28 with RMSE = 0.34 °C (95% CI from bootstrap in the summary table)
+and mean bias ≈ -0.29 °C. A negative R² does not imply that absolute temperature
+error is large; it follows directly from
+R² = 1 − SS_res/SS_tot.
+
+R² < 0 occurs whenever residual mean squared error exceeds the variance of the reference
+series—i.e., when predicting the sample mean of the meter would outperform the raw sensor
+readings. In this campaign the meter temperatures spanned only a narrow dynamic range
+(≈ 32.9–33.6 °C; span = 0.70 °C), so SS_tot was
+very small (0.7675), while a nearly constant systematic offset between sensor and
+meter kept SS_res larger (4.0500). Hence R² became strongly negative even though
+absolute error remained modest (RMSE ≈ 0.34 °C).
+
+After a simple linear mapping of sensor onto the meter scale
+(meter ≈ 0.208·sensor + 26.40), R² increased to 0.033 and RMSE to 0.14 °C.
+The remaining limited explained variance reflects insufficient temperature excursion during
+collection, not catastrophic sensing failure. We therefore report RMSE, bias, and
+Bland–Altman limits as the primary agreement measures for this channel, and treat
+pre-calibration R² as a diagnostic of offset + narrow range rather than as evidence of
+unusable absolute accuracy. EMS air-temperature readings require offset/scale calibration
+against a reference meter before use as absolute climate truth; future validation should
+intentionally span a wider temperature range.

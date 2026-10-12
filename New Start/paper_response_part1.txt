@@ -1,0 +1,26 @@
+Data collection. Sensor validation used paired ground-truth measurements on the BitnBolt
+hydroponic platform. For each observation, the IoT sensor reading and a simultaneous
+reference meter reading were logged as a matched pair. Four channels were validated:
+NFADS TDS (n=42), NFADS water temperature (n=142), EMS air temperature (n=36),
+and LMS illuminance BH1750 vs TSL2591 (n=753). Incomplete or non-numeric pairs were excluded.
+
+Train/test procedure. This sensor–meter study is a paired agreement analysis, not a
+supervised learning experiment. Therefore no train/test split or cross-validation fold
+partitioning was applied to these paired samples; every retained pair contributes to
+agreement metrics between the deployed sensor and the reference instrument. (ML models
+reported elsewhere in the manuscript use separate time-series cross-validation and are
+distinct from this ground-truth validation.)
+
+Error metrics and confidence intervals. With the meter as reference y and the sensor as
+ŷ, we computed RMSE, MAE, R², and mean bias. Uncertainty on RMSE/MAE/R²/bias was
+quantified by nonparametric bootstrap with B=500 resamples with replacement; the
+reported 95% CI is the interval between the 2.5th and 97.5th percentiles of the bootstrap
+distribution (fixed random seed for reproducibility). Calibration used OLS
+(sensor = a·reference + b) with slope/intercept intervals from the t-distribution.
+Bland–Altman analysis reported bias and limits of agreement (bias ± 1.96 SD).
+
+Accuracy percentages. For agreement reporting we primarily use RMSE/MAE/R²/bias with 95% CI.
+An optional in-tolerance accuracy was defined as the percentage of pairs satisfying
+|ŷ − y|/|y| ≤ 3%. For TDS this rate was 40.5%; for EMS air temperature 100.0%.
+This percentage is a descriptive fraction of paired samples inside the tolerance band,
+not a train/test classification score.
