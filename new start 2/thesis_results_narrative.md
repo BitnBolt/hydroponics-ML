@@ -8,7 +8,7 @@ Tds values were measured over a 7-minute window using TDS Sensor as the onboard 
 
 ## Water Temp (Nutrient Temperature (°C))
 
-Nutrient temperature values were measured over a 10-minute window using Water Temperature Sensor as the onboard sensor and Temperature Meter as the reference meter in the NFADS node, as seen in Figure 13. The basic raw data generated showed that the MAE, RMSE and R² values were 0.68 °C, 0.68 °C and not applicable (low variance in reference) respectively. The graph has been plotted between sensor data, meter data and progressive RMSE value for a given time interval as shown in Figure 14b. On applying Ordinary Least Squares (OLS) linear regression model (Estimated Fluid Temperature (°C) = 0.0000 x (Raw Sensor Reading) + 30.8000), the calibration interval dropped from ±1.34 °C to ±0.00 °C.
+Nutrient temperature values were measured over a 10-minute window using Water Temperature Sensor as the onboard sensor and Temperature Meter as the reference meter in the NFADS node, as seen in Figure 13. The reference meter stayed constant at 30.8 °C for the whole test, so R² is undefined and an OLS calibration is not identifiable. The sensor is therefore reported only through its fixed offset of -0.68 °C (MAE = 0.68 °C, sensor SD = 0.029 °C); see Figure 14b.
 
 ## Ems Temp (Air Temperature (°C))
 
@@ -16,17 +16,19 @@ Air temperature values were measured over a 9-minute window using Environment Te
 
 ## Lux (Light Intensity (Lux))
 
-Lux values were measured over a 12-hour daytime window using BH1750 as the lux sensor and TSL2591 as the lux meter in the LMS node, as seen in Figure 15. The basic raw data generated showed that the MAE, RMSE and R² values were 2207.98 Lux, 2660.56 Lux and 0.7842 respectively. The graph has been plotted between sensor data, meter data and progressive RMSE value for a given time interval as shown in Figure 17a. On applying Ordinary Least Squares (OLS) linear regression model (Estimated Light Intensity (Lux) = 0.7947 x (Raw Sensor Reading) - 143.7244), the calibration interval dropped from ±5214.69 Lux to ±235.18 Lux.
+Lux values were measured over a 8-hour 21-minute window using BH1750 as the lux sensor and TSL2591 as the lux meter in the LMS node, as seen in Figure 15. The basic raw data generated showed that the MAE, RMSE and R² values were 2207.98 Lux, 2660.56 Lux and 0.7842 respectively. The graph has been plotted between sensor data, meter data and progressive RMSE value for a given time interval as shown in Figure 17a. On applying Ordinary Least Squares (OLS) linear regression model (Estimated Light Intensity (Lux) = 0.7947 x (Raw Sensor Reading) - 143.7244), the calibration interval dropped from ±5214.69 Lux to ±235.18 Lux.
 
 ---
 
 ## Accuracy % and ± calibration analysis (all sensors)
 
+> **Note (added after reviewer response):** the tables below are the original **in-sample** results (OLS fitted and scored on the same data). Out-of-fold results, block-bootstrap intervals and the corrected water-temperature handling are in `review_response_paper_text.md` and in the "Reviewer response" sections of `main.ipynb`.
+
 **Definitions**
 
 - **Accuracy % (vs mean)** = `100 × (1 − RMSE / mean_meter)` — primary headline metric.
 - **Accuracy % (vs span)** = `100 × (1 − RMSE / meter_span)` — tracks how well the sensor follows changes over the test window.
-- **± Calibration interval** = `±1.96 × RMSE` (95% normal approximation; same as lux thesis section).
+- **± Calibration interval** = `±1.96 × RMSE` (95% normal approximation, same as lux thesis section).
 - **R²** = coefficient of determination vs reference meter.
 
 ### Table 1 — Accuracy % and ± calibration (raw vs OLS)
@@ -39,10 +41,10 @@ Lux values were measured over a 12-hour daytime window using BH1750 as the lux s
 | TDS | After OLS | 96.3% | 96.1% | 0.983 | 20.9 PPM | 23.2 PPM | ±45.5 PPM |
 | EMS air temp | Raw | 99.4%† | 7.3% | −5.18 | 0.18 °C | 0.19 °C | ±0.36 °C |
 | EMS air temp | After OLS | 99.8%† | 73.2% | 0.485 | 0.044 °C | 0.054 °C | ±0.10 °C |
-| Water temp | Raw | 97.8%† | N/A‡ | N/A | 0.68 °C | 0.68 °C | ±1.34 °C |
+| Water temp | Raw | 97.8%‡ | N/A‡ | N/A | 0.68 °C | 0.68 °C | ±1.34 °C |
 | Water temp | After OLS | ~100%§ | N/A | 0.000 | ~0 °C | ~0 °C | ±0.00 °C§ |
 
-† High vs mean because mean ≈ 29–31 °C and absolute error is small in °C; use **vs span** for EMS.  
+† High vs mean because mean ≈ 30–31 °C and absolute error in °C is small; use **vs span** for EMS.  
 ‡ Reference meter did not vary (fixed at 30.8 °C); span = 0.  
 § OLS collapses to constant 30.8 °C — not a valid calibration (logging issue).
 
@@ -64,7 +66,7 @@ Lux values were measured over a 12-hour daytime window using BH1750 as the lux s
 | EMS air temp | 0.9215×raw + 2.56 | 0.9215 ± 0.2670 | +2.56 ± 8.09 | ±0.10 °C |
 | Water temp | ~0×raw + 30.80 | ~0 ± 0 | 30.80 ± 0 | ±0.00 °C§ |
 
-Reading ± is field error after calibration; coefficient ± describes stability of the fitted line only.
+Reading ± is field error after calibration; coefficient ± describes stability of the fitted line only. (Slope/intercept intervals here are classical t-intervals; see the reviewer-response section for block-bootstrap intervals.)
 
 ### Table 4 — Ranked summary
 
